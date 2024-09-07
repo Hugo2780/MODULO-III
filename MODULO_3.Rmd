@@ -1,0 +1,231 @@
+---
+title: "MODULO3: Ciencia de Datos: Modelos Predictivos "
+author: "Hugo Donoso Reinoso"
+date: "2024-09-1"
+output: github_document
+---
+
+```{r setup, include=FALSE}
+options(repos = c(CRAN = "https://cran.rstudio.com/"))
+install.packages("readxlsx")
+install.packages("openxlsx")
+install.packages("ggplot2")
+install.packages("reshape2")
+install.packages("dplyr")
+install.packages("readr")
+installed.packages("dplyr")
+install.packages("lubridate")
+install.packages("forecast")
+install.packages("stargazer")
+install.packages("nortest")
+
+library(openxlsx)
+library (ggplot2)
+library(reshape2)
+library(dplyr)
+library(readxl)
+library(readr)
+library(dplyr)
+library(lubridate)
+library(forecast)
+
+library(MASS)
+library(tseries)
+library(urca)
+library( stargazer)
+library(lmtest)
+library(nortest)
+library(car)
+
+
+
+knitr::opts_chunk$set(echo = TRUE)
+```
+
+
+SECCION A
+```{r}
+basem3<- read.xlsx("E:\\Betametrica\\Modulo III\\Data3.xlsx")
+tsbase <- ts(basem3, start = c(2000,1), frequency = 4)
+ tsbase
+```
+
+LA TASA DE CRECIMIENTO RELATIVA COMPUESTA
+PARA  EXPORTACIONES ES: 
+
+
+```{r}
+
+ tasa <- tslm(log10(tsbase[,"Exportaciones"]) ~ trend, data=tsbase)
+ summary(tasa)
+ 
+ plot(tsbase[,"Exportaciones"], main="Exportaciones", ylab="Millones de USD", xlab="Tiempo")
+ abline(tasa, col="blue", lwd=2)
+ 
+ (exp(0.0019135)-1)*100
+```
+
+
+LA TASA DE CRECIMIENTO RELATIVA COMPUESTA 
+PARA OFERTA MONETARIA ESO:
+
+```{r}
+ plot(tsbase[,"Oferta.Monetaria"], main="Oferta Monetaria", ylab="Millones de USD", xlab="Tiempo")
+ abline(tasa, col="red", lwd=2)
+
+ 
+ tasa <- tslm(log10(tsbase[,"Oferta.Monetaria"]) ~ trend, data=tsbase)
+ summary(tasa)
+ 
+ 
+ (exp(0.0048247)-1)*100
+ 
+```
+
+
+
+SECCION B
+
+REGRESIÓN LINEAL MULTIPLE
+
+
+
+
+
+```{r}
+base<- read.xlsx("E:\\Betametrica\\Modulo III\\MRLM\\DATAPIB.xlsx")
+ View(base)
+ 
+ attach(base)
+
+ PIB =ts(base[,2], start =c(2000,1),end=c(2024,1), freq=4)
+ FBKF =ts(base[,3], start =c(2000,1),end=c(2024,1), freq=4)
+ DEMANDA.INTERNA =ts(base[,4], start =c(2000,1),end=c(2024,1), freq=4)
+
+
+
+
+```
+
+ #-------------------------Graficos de las variables------------------------
+
+ 
+```{r}
+
+```
+ Primer grafico
+
+```{r}
+ plot(PIB, type = "l", col = "navy", main = "PIB", xlab = "Tiempo", ylab = "Miles de US dólares
+")
+```
+
+Segundo grafico
+
+```{r}
+ plot(FBKF, type = "l", col = "violet", main = "FBKF", xlab = "Tiempo", ylab = "Miles de US dólares")
+ 
+```
+
+
+Tercer grafico
+```{r}
+ plot(DEMANDA.INTERNA, type = "l", col = "blue", main = "DEMANDA", xlab = "Tiempo", ylab = "Miles de US dólares")
+```
+
+
+```{r}
+ 
+ #------------------------ CONVERTIR UNA SERIE LOG------------------------
+ 
+ log_PIB <- log(PIB)  
+
+ log_FBKF <- log(FBKF)  
+ log_DEMANDA.INTERNA <- log(DEMANDA.INTERNA)  
+
+ 
+
+ 
+ #-------------------------Graficos de las variables LOG------------------------
+ 
+
+ plot(log_PIB)
+ 
+ 
+
+ plot(log_FBKF)
+ 
+ 
+ plot(log_DEMANDA.INTERNA)
+ 
+ 
+ 
+ #------------------------MODELO REGRESION LINEAL MULTIPLE------------------------
+ 
+ 
+ modelo1 <- lm(log_PIB~ log_FBKF + log_DEMANDA.INTERNA, data = base)
+ summary(modelo1)
+ 
+ stargazer(modelo1,type="text")
+ #----------------------- ERRORES DENTRO DE LA REGRESION------------------------
+ 
+ #RESIDUALES
+ #HOMOCEDASTICO
+ 
+ residuos <- resid(modelo1)
+ residuos
+ # Crear el Q-Q plot de los residuos
+ # se puede concluir que los datos tiene normalidad
+ 
+ x11()
+ plot(residuos, type = "l", main = "residuos", xlab = "C
+ndice", ylab = "residuos")
+ 
+ bptest(modelo1)
+ 
+ 
+ 
+ #NORMALES
+ shapiro.test(modelo1$residuals)
+ ad.test(modelo1$residuals)
+ jarque.bera.test(as.vector(modelo1$residuals))
+ 
+ #NO AUTOCORRELACION
+ dwtest(modelo1)
+ bgtest(modelo1)
+ 
+ #SISTEMICO
+ #MULTICOLINEALIDAD
+ vif_valores <- vif(modelo1)
+ print(vif_valores)
+ #CORRECTA ESPECIFICACION
+ resettest(modelo1)
+ 
+
+
+```
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
